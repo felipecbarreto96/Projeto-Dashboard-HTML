@@ -1,0 +1,32 @@
+{
+  "periodo": "Janeiro – Junho 2025",
+  "kpis": {
+    "receita_total": "R$ 348k",
+    "receita_delta": "+14%",
+    "pedidos_total": "1.800",
+    "pedidos_delta": "+9%",
+    "clientes": "500",
+    "ticket_medio": "R$ 189",
+    "ticket_delta": "-3%"
+  },
+  "mensal": [
+    { "mes": "Jan", "receita": 52, "pedidos": 280 },
+    { "mes": "Fev", "receita": 48, "pedidos": 261 },
+    { "mes": "Mar", "receita": 55, "pedidos": 298 },
+    { "mes": "Abr", "receita": 61, "pedidos": 330 },
+    { "mes": "Mai", "receita": 68, "pedidos": 362 },
+    { "mes": "Jun", "receita": 64, "pedidos": 311 }
+  ],
+  "canais": [
+    { "nome": "E-commerce", "percentual": 42 },
+    { "nome": "Loja física", "percentual": 31 },
+    { "nome": "Marketplace", "percentual": 27 }
+  ],
+  "categorias": [
+    { "nome": "Eletrônicos", "receita": 98 },
+    { "nome": "Moda",        "receita": 72 },
+    { "nome": "Casa",        "receita": 61 },
+    { "nome": "Esportes",    "receita": 55 },
+    { "nome": "Beleza",      "receita": 38 }
+  ]
+}
