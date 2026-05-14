@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Vendas</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f3ee; --surface: #ffffff; --border: rgba(0,0,0,0.08);
+      --text: #1a1917; --muted: #7a7870;
+      --blue: #1a5cff; --green: #0d9e6e; --red: #c94040; --purple: #6c5ce7; --amber: #c47a1e;
+      --radius: 14px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2.5rem 2rem 4rem; }
+    header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+    header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; }
+    header h1 span { color: var(--muted); font-size: 0.6em; display: block; font-family: 'DM Sans', sans-serif; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+    .badge { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.04em; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 2rem; }
+    .kpi { background: var(--surface); border-radius: var(--radius); padding: 1.25rem 1.4rem; border: 1px solid var(--border); position: relative; overflow: hidden; animation: fadeUp 0.5s ease both; }
+    .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--kpi-color, var(--blue)); border-radius: var(--radius) var(--radius) 0 0; }
+    .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 500; margin-bottom: 10px; }
+    .kpi-value { font-family: 'DM Serif Display', serif; font-size: 2.1rem; line-height: 1; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .kpi-delta { font-size: 12px; font-weight: 500; }
+    .up { color: var(--green); } .down { color: var(--red); } .neu { color: var(--muted); }
+    .charts-main { margin-bottom: 1.25rem; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    @media (max-width: 640px) { .charts-row { grid-template-columns: 1fr; } }
+    .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.4rem; animation: fadeUp 0.6s ease both; }
+    .card-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 500; margin-bottom: 1rem; }
+    .chart-wrap { position: relative; width: 100%; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px; font-size: 12px; color: var(--muted); }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 500; padding: 0 0 10px; border-bottom: 1px solid var(--border); }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 10px 0; }
+    tbody td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+    .pill-up { background: #e6f9f3; color: #0d6e4c; }
+    .pill-down { background: #fdecea; color: #a32020; }
+    .update-note { margin-top: 3rem; text-align: center; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .kpi:nth-child(1){animation-delay:.05s} .kpi:nth-child(2){animation-delay:.10s}
+    .kpi:nth-child(3){animation-delay:.15s} .kpi:nth-child(4){animation-delay:.20s}
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><span>Relatório Comercial</span>Dashboard de Vendas</h1>
+    <span class="badge">Janeiro – Junho 2025</span>
+  </header>
+
+  <div class="kpi-grid">
+    <div class="kpi" style="--kpi-color:#1a5cff;">
+      <p class="kpi-label">Receita Total</p>
+      <p class="kpi-value">R$ 348k</p>
+      <span class="kpi-delta up">▲ 14% vs H1 2024</span>
+    </div>
+    <div class="kpi" style="--kpi-color:#0d9e6e;">
+      <p class="kpi-label">Pedidos</p>
+      <p class="kpi-value">1.842</p>
+      <span class="kpi-delta up">▲ 9% vs H1 2024</span>
+    </div>
+    <div class="kpi" style="--kpi-color:#6c5ce7;">
+      <p class="kpi-label">Clientes Ativos</p>
+      <p class="kpi-value">627</p>
+      <span class="kpi-delta neu">novos clientes</span>
+    </div>
+    <div class="kpi" style="--kpi-color:#c94040;">
+      <p class="kpi-label">Ticket Médio</p>
+      <p class="kpi-value">R$ 189</p>
+      <span class="kpi-delta down">▼ 3% vs H1 2024</span>
+    </div>
+  </div>
+
+  <div class="charts-main">
+    <div class="card">
+      <p class="card-title">Receita & Pedidos — evolução mensal</p>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#1a5cff;"></span>Receita (R$ mil)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#0d9e6e;"></span>Pedidos</span>
+      </div>
+      <div class="chart-wrap" style="height:260px;">
+        <canvas id="mainChart" role="img" aria-label="Receita e pedidos por mês de janeiro a junho de 2025">Jan 52k/280, Fev 48k/261, Mar 55k/298, Abr 61k/330, Mai 68k/362, Jun 64k/311.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-row" style="margin-bottom:1.25rem;">
+    <div class="card">
+      <p class="card-title">Canais de venda</p>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#1a5cff;"></span>E-commerce 42%</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#0d9e6e;"></span>Loja física 31%</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#6c5ce7;"></span>Marketplace 27%</span>
+      </div>
+      <div class="chart-wrap" style="height:190px;">
+        <canvas id="channelChart" role="img" aria-label="Canais: E-commerce 42%, Loja física 31%, Marketplace 27%">E-commerce 42%, Loja física 31%, Marketplace 27%.</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <p class="card-title">Top categorias (R$ mil)</p>
+      <div class="chart-wrap" style="height:220px;">
+        <canvas id="catChart" role="img" aria-label="Top categorias por receita">Eletrônicos 98k, Moda 72k, Casa 61k, Esportes 55k, Beleza 38k.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="card-title">Desempenho mensal</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Mês</th><th>Receita</th><th>Pedidos</th><th>Ticket Médio</th><th>vs. mês anterior</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Janeiro</td>  <td>R$ 52.000</td><td>280</td><td>R$ 185</td><td>—</td></tr>
+          <tr><td>Fevereiro</td><td>R$ 48.000</td><td>261</td><td>R$ 183</td><td><span class="pill pill-down">▼ 7,7%</span></td></tr>
+          <tr><td>Março</td>    <td>R$ 55.000</td><td>298</td><td>R$ 184</td><td><span class="pill pill-up">▲ 14,6%</span></td></tr>
+          <tr><td>Abril</td>    <td>R$ 61.000</td><td>330</td><td>R$ 184</td><td><span class="pill pill-up">▲ 10,9%</span></td></tr>
+          <tr><td>Maio</td>     <td>R$ 68.000</td><td>362</td><td>R$ 187</td><td><span class="pill pill-up">▲ 11,5%</span></td></tr>
+          <tr><td>Junho</td>    <td>R$ 64.000</td><td>311</td><td>R$ 205</td><td><span class="pill pill-down">▼ 5,9%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p class="update-note">Dados fictícios para demonstração · H1 2025</p>
+
+  <script>
+    /* ================================================================
+       PARA ATUALIZAR OS DADOS: edite apenas os valores abaixo.
+       Não é necessário mexer em mais nada no arquivo.
+    ================================================================ */
+
+    const MESES   = ['Jan','Fev','Mar','Abr','Mai','Jun'];
+    const RECEITA = [52, 48, 55, 61, 68, 64];    // valores em R$ mil
+    const PEDIDOS = [280, 261, 298, 330, 362, 311];
+
+    const CANAIS = {
+      labels: ['E-commerce', 'Loja física', 'Marketplace'],
+      data:   [42, 31, 27]   // percentuais
+    };
+
+    const CATEGORIAS = {
+      labels: ['Eletrônicos','Moda','Casa','Esportes','Beleza'],
+      data:   [98, 72, 61, 55, 38]   // R$ mil
+    };
+
+    /* ================================================================
+       Abaixo: código dos gráficos. Não precisa editar.
+    ================================================================ */
+
+    const CORES = ['#1a5cff','#0d9e6e','#6c5ce7','#c94040','#c47a1e'];
+
+    new Chart(document.getElementById('mainChart'), {
+      type: 'bar',
+      data: {
+        labels: MESES,
+        datasets: [
+          { label: 'Receita (R$ mil)', data: RECEITA, backgroundColor: '#1a5cff', borderRadius: 5, yAxisID: 'y' },
+          { label: 'Pedidos', data: PEDIDOS, type: 'line', borderColor: '#0d9e6e', backgroundColor: 'rgba(13,158,110,0.08)', pointBackgroundColor: '#0d9e6e', pointRadius: 5, tension: 0.4, fill: true, yAxisID: 'y2' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y:  { position: 'left',  ticks: { callback: v => 'R$'+v+'k', font: { size: 11 }, color: '#7a7870' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+          y2: { position: 'right', ticks: { font: { size: 11 }, color: '#0d9e6e' }, grid: { display: false } },
+          x:  { ticks: { font: { size: 12 }, color: '#7a7870' }, grid: { display: false } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('channelChart'), {
+      type: 'doughnut',
+      data: { labels: CANAIS.labels, datasets: [{ data: CANAIS.data, backgroundColor: CORES, borderWidth: 0, hoverOffset: 8 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '65%' }
+    });
+
+    new Chart(document.getElementById('catChart'), {
+      type: 'bar',
+      indexAxis: 'y',
+      data: { labels: CATEGORIAS.labels, datasets: [{ data: CATEGORIAS.data, backgroundColor: CORES, borderRadius: 4 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { callback: v => 'R$'+v+'k', font: { size: 11 }, color: '#7a7870' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+          y: { ticks: { font: { size: 12 }, color: '#7a7870' }, grid: { display: false } }
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
